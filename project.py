@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Jun  2 21:17:30 2021
-
 @author: ori1j
 """
 from PIL import Image
@@ -27,27 +26,24 @@ def AproachData():
         return path 
 
         
-
-def ProcessImage(imagepath):
-    #the function moves the picture to a wanted location
-    imgpath=input('enter location of the image, including the name of the image: ')
     
+def ProcessImage(imagepath):
+    for file in os.scandir(imagepath+'/good'):#cleariing the folder
+        os.unlink(file.path)
+    #the function moves the picture to a wanted location
+    imgpath=input('enter location of the image: ')
+    imgname=input('please enter image name: ')
+    imgpath+='/'+imgname+'.jpg'
     while(True):
         try:
             im=Image.open(imgpath)
-            return imgpath
+            break
         except:
-            imgpath=input('image path not valid. enter the correct imagae path')
-    shutil.move(imgpath,imagepath)
+            imgpath=input('image path not valid. enter the correct imagae path: ')
+            imgname=input('and image name: ')
+            imgpath+='/'+imgname+'.jpg'
+    shutil.copy(imgpath,(imagepath+'/good'))
     
-def PlotIMages(image_arr):
-    fig,axes= plt.subplots(1,10,figsize=(20,20))
-    axes=axes.flatten()
-    for img, ax in zip(image_arr,axes):
-        ax.imshow(img)
-        ax.axis('off')
-    plt.tight_layout()
-    plt.show()    
 
 def TrainAndSaveModel(trainbatches,validbatches):
     model=Sequential([
@@ -60,8 +56,6 @@ def TrainAndSaveModel(trainbatches,validbatches):
         ])
     model.summary()
     model.compile(optimizer=Adam(learning_rate=0.0001),loss='binary_crossentropy',metrics=['accuracy'])
-    #imgs = next(trainbatches)
-    #PlotIMages(imgs)
 
     model.fit(x=trainbatches,
               steps_per_epoch=len(trainbatches),
@@ -99,14 +93,12 @@ testbatches = ImageDataGenerator(preprocessing_function=tf.keras.applications.vg
 imagebatches=ImageDataGenerator(preprocessing_function=tf.keras.applications.vgg16.preprocess_input)\
     .flow_from_directory(directory=imagepath, target_size=(224,224),classes=['bad','good'],batch_size=10)
 
-x=input('to run the script with a pre-trained model type:1 ,if you type something else the model will be trained right now.')
-if(x!=1):
+y=input('to run the program with a pre trained model type:run. else the program will run the training on its self')
+if(y!='run'):
     TrainAndSaveModel(trainbatches, validbatches)#train and validation
 model = load_model('C:/data/model.h5')
 
     
-
-
 Test(model,testbatches)#test 
 
 
@@ -119,9 +111,3 @@ if(np.argmax(prediction,axis=-1)[0]==1):
 else:
     print('person not attending zoom class')
     
-
-
-
-
-
-
